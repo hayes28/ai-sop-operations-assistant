@@ -1,7 +1,7 @@
 /**
  * AI SOP & Operations Assistant
- * Enterprise tabbed UI — wire runTool() to your approved API endpoint.
- * Demo samples live in samples.js. Human review state persists in localStorage.
+ * Generate calls POST /api/generate on the Express server (Gemini key stays in .env).
+ * Load sample uses samples.js only — no API. Human review persists in localStorage.
  */
 
 const TOOLS = [
@@ -13,7 +13,7 @@ const TOOLS = [
 
 const REVIEW_STORAGE_KEY = "ops-assistant-review-v1";
 const ACCESS_CODE_STORAGE_KEY = "ops-assistant-access-code";
-const MAX_INPUT_LENGTH = 8000;
+const MAX_INPUT_LENGTH = 6000;
 
 function normalizeInput(text) {
   return text.replace(/\r\n/g, "\n").trim();
@@ -37,6 +37,20 @@ function getAccessCode() {
   return input?.value.trim() ?? "";
 }
 
+let accessCodeVerified = false;
+
+function setAccessCodeStatus(message, state = "pending") {
+  const el = document.getElementById("access-code-status");
+  if (!el) return;
+  el.textContent = message;
+  el.classList.remove(
+    "access-code-status--verified",
+    "access-code-status--error",
+    "access-code-status--pending"
+  );
+  el.classList.add(`access-code-status--${state}`);
+}
+
 function persistAccessCode() {
   const code = getAccessCode();
   if (code) {
@@ -44,6 +58,8 @@ function persistAccessCode() {
   } else {
     sessionStorage.removeItem(ACCESS_CODE_STORAGE_KEY);
   }
+  accessCodeVerified = false;
+  setAccessCodeStatus("Code changed — click Verify or press Enter.", "pending");
 }
 
 function restoreAccessCode() {
@@ -53,14 +69,133 @@ function restoreAccessCode() {
   if (saved) input.value = saved;
 }
 
+async function verifyAccessCode() {
+  const code = getAccessCode();
+  const btn = document.getElementById("verify-access-btn");
+
+  if (!code) {
+    setAccessCodeStatus("Enter an access code first.", "error");
+    return false;
+  }
+
+  persistAccessCode();
+  btn.disabled = true;
+  setAccessCodeStatus("Checking with server…", "pending");
+
+  try {
+    const response = await fetch("/api/verify-access", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Access-Code": code,
+      },
+      body: JSON.stringify({ accessCode: code }),
+    });
+
+    let data = {};
+    try {
+      data = await response.json();
+    } catch {
+      /* ignore */
+    }
+
+    if (!response.ok) {
+      accessCodeVerified = false;
+      setAccessCodeStatus(mapApiError(response, data), "error");
+      return false;
+    }
+
+    accessCodeVerified = true;
+    setAccessCodeStatus("Access code verified. You can use Generate with custom text.", "verified");
+    return true;
+  } catch {
+    accessCodeVerified = false;
+    setAccessCodeStatus(
+      "Cannot reach server. Run npm start and open http://localhost:3000.",
+      "error"
+    );
+    return false;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 function initAccessCode() {
   restoreAccessCode();
-  getAccessCodeInput()?.addEventListener("input", persistAccessCode);
+  const input = getAccessCodeInput();
+  const btn = document.getElementById("verify-access-btn");
+
+  input?.addEventListener("input", persistAccessCode);
+
+  input?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      verifyAccessCode();
+    }
+  });
+
+  btn?.addEventListener("click", () => verifyAccessCode());
+
+  if (getAccessCode()) {
+    setAccessCodeStatus("Click Verify to confirm your access code with the server.", "pending");
+  }
+}
+
+function getReviewerNameForRequest() {
+  const input = document.getElementById("reviewer-name");
+  const name = input?.value.trim() ?? "";
+  return name || undefined;
+}
+
+/** Maps API error payloads to user-friendly messages. */
+function mapApiError(response, data) {
+  if (data?.error && typeof data.error === "string") {
+    return data.error;
+  }
+
+  const byCode = {
+    ACCESS_REQUIRED: "Access code is required. Enter it in the header before generating.",
+    ACCESS_DENIED: "Invalid access code. It must match ACCESS_CODE in the server .env file.",
+    ACCESS_NOT_CONFIGURED:
+      "Server access code is not configured. Set ACCESS_CODE in .env and restart npm start.",
+    API_KEY_MISSING:
+      "AI is not configured. Add a real GEMINI_API_KEY to .env (from Google AI Studio) and restart npm start.",
+    API_KEY_INVALID:
+      "GEMINI_API_KEY was rejected by Google. Create a new key at aistudio.google.com/apikey, update .env, restart npm start.",
+    GEMINI_QUOTA:
+      "Google Gemini quota exceeded for this model. Wait and retry, switch GEMINI_MODEL in .env, or use Load sample.",
+    RATE_LIMIT: "Too many requests. Wait a minute and try again, or use Load sample.",
+    DAILY_LIMIT:
+      "Daily generation limit reached. Try again tomorrow or use Load sample for offline demos.",
+    VALIDATION_ERROR: "Request was invalid. Check your input length and try again.",
+    GENERATION_FAILED: "Generation failed on the server. Try again in a moment.",
+  };
+
+  if (data?.code && byCode[data.code]) {
+    return byCode[data.code];
+  }
+
+  switch (response.status) {
+    case 400:
+      return "Input validation failed. Shorten your text or check the tool selection.";
+    case 401:
+      return "Invalid or missing access code.";
+    case 404:
+      return "API not found. Use http://localhost:3000 (run npm start), then Ctrl+C and npm start again after code updates.";
+    case 429:
+      return "Rate or daily limit reached. Wait and retry, or use Load sample.";
+    case 503:
+      return "AI service unavailable. Check server .env (GEMINI_API_KEY, ACCESS_CODE) and restart.";
+    case 500:
+      return "Server error during generation. Check the terminal running npm start.";
+    default:
+      return `Request failed (HTTP ${response.status}).`;
+  }
 }
 
 /**
- * Portfolio demos: exact sample input returns bundled output without calling the API.
- * Custom input calls POST /api/generate (Gemini on the server).
+ * Portfolio demos: exact sample input → bundled output (no API).
+ * Other input → POST /api/generate with toolId, input, accessCode, reviewerName.
  */
 async function runTool(toolId, input) {
   const trimmed = input.trim();
@@ -69,7 +204,9 @@ async function runTool(toolId, input) {
   }
 
   if (trimmed.length > MAX_INPUT_LENGTH) {
-    throw new Error(`Input is too long. Maximum is ${MAX_INPUT_LENGTH} characters.`);
+    throw new Error(
+      `Input is too long (${trimmed.length} characters). Maximum is ${MAX_INPUT_LENGTH}.`
+    );
   }
 
   const demo = getDemoOutput(toolId, trimmed);
@@ -77,31 +214,51 @@ async function runTool(toolId, input) {
 
   const accessCode = getAccessCode();
   if (!accessCode) {
-    throw new Error("Enter the access code in the header before generating with AI.");
+    throw new Error("Enter the access code in the header, then click Verify.");
+  }
+  if (!accessCodeVerified) {
+    const ok = await verifyAccessCode();
+    if (!ok) {
+      throw new Error("Access code not verified. Click Verify in the header and try again.");
+    }
   }
 
-  const response = await fetch("/api/generate", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Access-Code": accessCode,
-    },
-    body: JSON.stringify({ toolId, input: trimmed }),
-  });
+  const payload = {
+    toolId,
+    input: trimmed,
+    accessCode,
+    reviewerName: getReviewerNameForRequest(),
+  };
+
+  let response;
+  try {
+    response = await fetch("/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Access-Code": accessCode,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    throw new Error(
+      "Cannot reach the server. Run npm start in the project folder and open http://localhost:3000 (not the HTML file directly)."
+    );
+  }
 
   let data = {};
   try {
     data = await response.json();
   } catch {
-    /* non-JSON error body */
+    /* non-JSON body */
   }
 
   if (!response.ok) {
-    throw new Error(data.error || `Generation failed (${response.status}).`);
+    throw new Error(mapApiError(response, data));
   }
 
   if (!data.text || typeof data.text !== "string") {
-    throw new Error("Server returned an invalid response.");
+    throw new Error("Server returned an invalid response. Check npm start logs.");
   }
 
   return data.text;

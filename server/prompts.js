@@ -67,12 +67,16 @@ ${input}
 ---`,
 };
 
-function buildPrompt(toolId, input) {
+function buildPrompt(toolId, input, options = {}) {
   const template = PROMPT_TEMPLATES[toolId];
   if (!template) {
     throw new Error(`Unknown tool: ${toolId}`);
   }
-  return template(input);
+  let prompt = template(input);
+  if (options.reviewerName) {
+    prompt += `\n\n(Submitted for human review by: ${options.reviewerName})`;
+  }
+  return prompt;
 }
 
 module.exports = { VALID_TOOLS, buildPrompt };

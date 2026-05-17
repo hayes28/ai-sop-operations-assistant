@@ -20,17 +20,26 @@
         </div>
       </div>
       <div class="app-header__meta">
-        <label class="access-code-wrap" for="access-code">
-          <span>Access code</span>
-          <input
-            type="password"
-            id="access-code"
-            class="access-code-input"
-            placeholder="Required for AI generate"
-            autocomplete="off"
-            spellcheck="false"
-          />
-        </label>
+        <div class="access-code-wrap">
+          <span class="access-code-wrap__label">Access code</span>
+          <div class="access-code-row">
+            <input
+              type="password"
+              id="access-code"
+              class="access-code-input"
+              placeholder="Matches ACCESS_CODE in .env"
+              autocomplete="off"
+              spellcheck="false"
+              aria-describedby="access-code-status"
+            />
+            <button type="button" class="btn btn-verify" id="verify-access-btn">
+              Verify
+            </button>
+          </div>
+          <p id="access-code-status" class="access-code-status" role="status" aria-live="polite">
+            Enter your code and click Verify (or press Enter).
+          </p>
+        </div>
         <span class="env-badge">Internal</span>
         <span class="app-header__version">v0.2 · API</span>
       </div>
@@ -129,7 +138,7 @@
                 name="input"
                 class="input-textarea"
                 rows="16"
-                maxlength="8000"
+                maxlength="6000"
                 placeholder="Describe the process: triggers, steps, systems, roles, escalation paths, and exceptions..."
               ></textarea>
               <div class="form-actions">
@@ -203,7 +212,7 @@
                 name="input"
                 class="input-textarea"
                 rows="16"
-                maxlength="8000"
+                maxlength="6000"
                 placeholder="Paste raw shift notes, meeting minutes, or incident timeline entries..."
               ></textarea>
               <div class="form-actions">
@@ -276,7 +285,7 @@
                 name="input"
                 class="input-textarea"
                 rows="16"
-                maxlength="8000"
+                maxlength="6000"
                 placeholder="Paste transcripts, email threads, or stand-up notes containing commitments and follow-ups..."
               ></textarea>
               <div class="form-actions">
@@ -347,7 +356,7 @@
                 name="input"
                 class="input-textarea"
                 rows="16"
-                maxlength="8000"
+                maxlength="6000"
                 placeholder="Paste incident details, engineering updates, or internal ops briefs to rewrite for a business audience..."
               ></textarea>
               <div class="form-actions">
