@@ -2,6 +2,12 @@
 
 Portfolio prototype for operations teams: draft SOPs, summarize shift notes, extract action items, and rewrite technical updates for business audiences. The UI is a single-page enterprise-style app; **AI runs only through a local Express backend** so your Gemini API key never ships to the browser.
 
+## Why this project matters
+
+Many AI portfolio projects stop at “generate text.” This project is designed around a more realistic operations workflow: helping teams draft SOPs, summarize shift and incident notes, extract action items, and rewrite technical updates for business audiences while preserving human review before content is used operationally.
+
+The goal is to show applied AI product thinking, not just model access. The app treats AI output as draft material that must be reviewed, edited, and approved, which better reflects how AI should be used in controlled business environments.
+
 ![App home — Draft SOP with sample data and review controls](docs/screenshots/app-home.png)
 
 ![Header with access-code verification and tabbed workspace](docs/screenshots/access-and-review.png)
@@ -161,6 +167,12 @@ With the server running on port 3000:
 npx playwright screenshot http://localhost:3000 docs/screenshots/app-home.png --full-page
 npx playwright screenshot http://localhost:3000 docs/screenshots/access-and-review.png --viewport-size=1440,1200
 ```
+
+## What this demonstrates
+
+- Applied AI workflow design for operations-heavy documentation and communication tasks
+- Human-in-the-loop review controls, including approval, rejection, editing, and reviewer attribution
+- Secure backend integration patterns for AI features, including server-side API key handling, access gating, and abuse controls
 
 ---
 
