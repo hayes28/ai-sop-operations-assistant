@@ -2,15 +2,19 @@
 
 Portfolio prototype for operations teams: draft SOPs, summarize shift notes, extract action items, and rewrite technical updates for business audiences. The UI is a single-page enterprise-style app; **AI runs only through a local Express backend** so your Gemini API key never ships to the browser.
 
+![App home — Draft SOP with sample data and review controls](docs/screenshots/app-home.png)
+
 ## Why this project matters
 
 Many AI portfolio projects stop at “generate text.” This project is designed around a more realistic operations workflow: helping teams draft SOPs, summarize shift and incident notes, extract action items, and rewrite technical updates for business audiences while preserving human review before content is used operationally.
 
 The goal is to show applied AI product thinking, not just model access. The app treats AI output as draft material that must be reviewed, edited, and approved, which better reflects how AI should be used in controlled business environments.
 
-![App home — Draft SOP with sample data and review controls](docs/screenshots/app-home.png)
-
 ![Header with access-code verification and tabbed workspace](docs/screenshots/access-and-review.png)
+
+## Business Value
+
+This tool demonstrates how AI can support operations teams by reducing time spent rewriting messy notes, improving documentation consistency, and helping teams turn informal updates into structured SOPs, action items, and stakeholder-ready communication.
 
 ## Features
 
@@ -173,6 +177,21 @@ npx playwright screenshot http://localhost:3000 docs/screenshots/access-and-revi
 - Applied AI workflow design for operations-heavy documentation and communication tasks
 - Human-in-the-loop review controls, including approval, rejection, editing, and reviewer attribution
 - Secure backend integration patterns for AI features, including server-side API key handling, access gating, and abuse controls
+
+## AI-Assisted Development
+
+This project was built with support from Cursor AI as part of an AI-assisted development workflow. Cursor was used for planning, code generation, debugging, refactoring, and documentation support. Final implementation decisions, testing, and business logic review were completed manually.
+
+## Future Enhancements
+
+- Document upload support for PDFs and Word files
+- Role-based access for reviewers and managers
+- Saved SOP history
+- Searchable knowledge base
+- Vector-based document retrieval / RAG
+- Export to PDF or Markdown
+- Dashboard for pending review items
+- Live Demo: Coming soon
 
 ---
 
