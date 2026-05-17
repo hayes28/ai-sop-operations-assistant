@@ -1,27 +1,25 @@
 # AI SOP & Operations Assistant
 
-Operations writing UI (SOP drafts, shift summaries, action items, business rewrites) with a **secure local AI stack**: the browser calls your Express server; the server calls Gemini using keys from `.env` only.
+Portfolio prototype for operations teams: draft SOPs, summarize shift notes, extract action items, and rewrite technical updates for business audiences. The UI is a single-page enterprise-style app; **AI runs only through a local Express backend** so your Gemini API key never ships to the browser.
 
-## What works without AI
+![App home — Draft SOP with sample data and review controls](docs/screenshots/app-home.png)
 
-- **Load sample** — fills input + output from `samples.js` (no network, no API key)
-- **Generate** with text that exactly matches a bundled sample — same offline output
-- Human review (approve / request changes / edit output)
+![Header with access-code verification and tabbed workspace](docs/screenshots/access-and-review.png)
 
-## What needs the backend
+## Features
 
-- **Generate** with **your own** input text → `POST /api/generate` → Gemini
+| Area | What you get |
+|------|----------------|
+| **Four tools** | Draft SOP · Summarize Ops Notes · Extract Action Items · Business Rewrite |
+| **Offline demo** | **Load sample** fills realistic input/output from `samples.js` (no API) |
+| **Live AI** | **Generate** on custom text → `POST /api/generate` → Gemini (server-side) |
+| **Access gate** | **Verify** checks `ACCESS_CODE` from `.env` before generation |
+| **Human review** | Approve · Request changes · Edit output · Reset review (localStorage) |
+| **Abuse controls** | Rate limit, daily cap, max input/output tokens (see `.env.example`) |
 
----
+## Why the API key stays server-side
 
-## Why the API key must stay server-side
-
-`GEMINI_API_KEY` bills your Google account. If it appears in `app.js`, `index.html`, or static hosting:
-
-- Anyone can steal it from DevTools or your repo
-- Attackers can run unlimited generations on your quota
-
-This project stores the key **only** in `.env` and uses it **only** in `server/gemini.js`. The client sends `toolId`, `input`, `accessCode`, and optional `reviewerName` — never the Gemini key.
+`GEMINI_API_KEY` bills your Google account. If it lives in `app.js` or static hosting, anyone can copy it from DevTools and spend your quota. This project keeps the key in **`.env`** and uses it only in **`server/gemini.js`**. The browser sends `toolId`, `input`, `accessCode`, and optional `reviewerName` — never the Gemini key.
 
 ---
 
@@ -32,143 +30,109 @@ This project stores the key **only** in `.env` and uses it **only** in `server/g
 
 ---
 
-## Local setup (exact commands)
-
-Open a terminal in the project folder:
-
-```bash
-cd path/to/ai-sop-operations-assistant
-```
-
-**1. Install dependencies (once)**
-
-```bash
-npm install
-```
-
-**2. Create environment file**
-
-Windows (PowerShell):
+## Local setup
 
 ```powershell
+cd path\to\ai-sop-operations-assistant
+npm install
 copy .env.example .env
 ```
 
-macOS / Linux:
-
-```bash
-cp .env.example .env
-```
-
-**3. Edit `.env`** — minimum required:
+Edit **`.env`** (save the file, then restart the server):
 
 ```env
-GEMINI_API_KEY=your_actual_key_here
-ACCESS_CODE=choose-a-strong-passphrase
+GEMINI_API_KEY=your_key_from_google_ai_studio
+ACCESS_CODE=your-shared-passphrase
+GEMINI_MODEL=gemini-2.0-flash
 ```
 
-**4. Start the server**
+If you hit **quota errors** on `gemini-2.0-flash`, try `gemini-2.0-flash-lite` in `.env` and restart. Check usage at [ai.dev/rate-limit](https://ai.dev/rate-limit).
 
-```bash
+**Start the server:**
+
+```powershell
 npm start
 ```
 
-You should see:
+**Dev mode (auto-restart on file changes):**
 
-- `Loaded environment from .env`
-- `AI SOP & Operations Assistant → http://localhost:3000`
-- Warnings if `GEMINI_API_KEY` or `ACCESS_CODE` is missing
-
-**Optional — auto-restart on file changes (Node 18+):**
-
-```bash
+```powershell
 npm run dev
 ```
 
-**5. Open the app**
+Open **http://localhost:3000** (not `file://`). You should see:
 
-Use the URL from the terminal (default):
+- `Loaded environment from .env`
+- `ACCESS_CODE loaded (N characters)`
+- No placeholder warning for `GEMINI_API_KEY`
 
-**http://localhost:3000**
-
-Do **not** open `index.html` as a `file://` URL if you want live AI — the API lives on the Express server.
-
-**6. Health check (optional)**
-
-Visit **http://localhost:3000/api/health** — `ok: true` when both `GEMINI_API_KEY` and `ACCESS_CODE` are set (does not expose secrets).
+Optional: **http://localhost:3000/api/health** → `{ "ok": true, ... }` when env is configured.
 
 ---
 
 ## Using the app
 
-| Action | Access code needed? | Calls API? |
-|--------|---------------------|------------|
+1. Enter **Access code** in the header (same as `ACCESS_CODE` in `.env`).
+2. Click **Verify** (or press **Enter**) until the status shows **Access code verified**.
+3. **Load sample** — instant demo, no Gemini call.
+4. **Generate** with your own text — calls the backend (requires verify + valid API quota).
+
+| Action | Verify required? | Calls Gemini? |
+|--------|------------------|---------------|
 | Load sample | No | No |
-| Generate (sample text unchanged) | No | No |
-| Generate (custom text) | Yes (header field) | Yes |
-
-Enter the same value in the header **Access code** field as `ACCESS_CODE` in `.env`.
+| Generate (exact bundled sample input) | No | No |
+| Generate (custom input) | Yes | Yes |
 
 ---
 
-## End-to-end test (one successful AI generation)
+## Verified local integration test
 
-1. Confirm `.env` has valid `GEMINI_API_KEY` and `ACCESS_CODE`.
-2. Run `npm start` and open **http://localhost:3000**.
-3. In the header, enter your **Access code** (matches `.env`).
-4. Open any tab (e.g. **Summarize Ops Notes**).
-5. **Clear** the textarea or replace sample text with a short custom note, for example:
+Run with `npm start` and a configured `.env`:
 
-   ```text
-   Shift 14 May: conveyor delay 20 min, 12 orders rerouted to morning wave, no injuries.
-   ```
+| Step | Endpoint | Expected |
+|------|----------|----------|
+| Health | `GET /api/health` | `ok: true` when key + access code are set |
+| Verify | `POST /api/verify-access` | **200** `{ "ok": true }` with correct code |
+| Generate | `POST /api/generate` | **200** `{ "text": "..." }` when quota allows; otherwise **429** `GEMINI_QUOTA` with a clear message |
 
-6. Click **Summarize notes** (Generate).
-7. Wait for the output card — status should move to **Pending review** with new AI text (not the bundled sample block).
-8. Confirm in DevTools → Network: `POST /api/generate` → **200**, response `{ "text": "..." }`.
-9. Confirm terminal has no Gemini/auth errors.
-
-**Negative checks (optional):**
-
-- Wrong access code → red error: invalid access code
-- Empty access code → prompt to enter code
-- Stop `npm start` and click Generate → cannot reach server message
-- Paste 7000+ characters → input too long (client or 400 from server)
-
----
-
-## API reference
-
-**`POST /api/generate`**
-
-Headers:
-
-- `Content-Type: application/json`
-- `X-Access-Code: <same as ACCESS_CODE in .env>` (optional if `accessCode` is in the body)
-
-Body:
+Example generate body:
 
 ```json
 {
   "toolId": "summarize-notes",
-  "input": "Your ops notes…",
+  "input": "Shift 16 May: conveyor delay 12 min, 5 orders rerouted.",
   "accessCode": "your-access-code",
   "reviewerName": "Demo reviewer"
 }
 ```
 
-Response: `{ "text": "…" }`
+Headers: `Content-Type: application/json`, `X-Access-Code: your-access-code`
 
-Errors: `{ "error": "…", "code": "…" }`
+---
+
+## API reference
+
+### `GET /api/health`
+
+Public config check (no secrets).
+
+### `POST /api/verify-access`
+
+Confirms the access code. Body or header: `accessCode` / `X-Access-Code`.
+
+### `POST /api/generate`
+
+Runs the selected tool prompt against Gemini.
 
 | Code | HTTP | Meaning |
 |------|------|---------|
 | `ACCESS_REQUIRED` / `ACCESS_DENIED` | 401 | Missing or wrong access code |
-| `ACCESS_NOT_CONFIGURED` | 503 | `ACCESS_CODE` not in `.env` |
-| `API_KEY_MISSING` | 503 | `GEMINI_API_KEY` not in `.env` |
-| `RATE_LIMIT` / `DAILY_LIMIT` | 429 | Abuse limits |
-| `VALIDATION_ERROR` | 400 | Bad input / too long |
-| `GENERATION_FAILED` | 500 | Gemini or server error |
+| `ACCESS_NOT_CONFIGURED` | 503 | `ACCESS_CODE` missing in `.env` |
+| `API_KEY_MISSING` / `API_KEY_INVALID` | 503 | Gemini key missing or rejected |
+| `GEMINI_QUOTA` | 429 | Google free-tier / rate limit (wait or change model) |
+| `RATE_LIMIT` / `DAILY_LIMIT` | 429 | Server abuse limits |
+| `VALIDATION_ERROR` | 400 | Bad `toolId`, empty input, or input too long |
+| `GENERATION_FAILED` | 500 | Unexpected server/Gemini error |
 
 ---
 
@@ -176,21 +140,27 @@ Errors: `{ "error": "…", "code": "…" }`
 
 | Path | Purpose |
 |------|---------|
-| `index.html`, `style.css`, `app.js`, `samples.js` | Frontend |
-| `server.js` | Express entry — static files + API |
-| `server/env.js` | Loads `.env`, startup warnings |
-| `server/security.js` | Access code + rate limit |
-| `server/validate.js` | Input limits + body validation |
+| `index.html`, `style.css`, `app.js`, `samples.js` | Frontend UI + offline samples |
+| `server.js` | Express: static files + API routes |
+| `server/env.js` | Load `.env`, startup checks |
+| `server/security.js` | Access code, rate limiting |
+| `server/validate.js` | Request validation |
 | `server/dailyCap.js` | In-memory daily cap per IP |
-| `server/prompts.js` | Per-tool prompts |
-| `server/gemini.js` | Gemini client (API key here only) |
-| `.env.example` | Template — copy to `.env` |
+| `server/prompts.js` | Per-tool prompt templates |
+| `server/gemini.js` | Gemini client (**API key here only**) |
+| `docs/screenshots/` | README screenshots |
+| `.env.example` | Environment template |
 
 ---
 
-## Cost / abuse limits (server)
+## Regenerating screenshots (optional)
 
-Configured in `.env`: `MAX_INPUT_LENGTH`, `MAX_OUTPUT_TOKENS`, `RATE_LIMIT_MAX`, `DAILY_REQUEST_CAP`, etc. See `.env.example`.
+With the server running on port 3000:
+
+```powershell
+npx playwright screenshot http://localhost:3000 docs/screenshots/app-home.png --full-page
+npx playwright screenshot http://localhost:3000 docs/screenshots/access-and-review.png --viewport-size=1440,1200
+```
 
 ---
 
