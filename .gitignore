@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# OS & editor
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# Logs & caches
+*.log
+npm-debug.log*
+.cache/
+dist/
+build/
+
+# Optional local server / tooling
+.vercel
+.netlify

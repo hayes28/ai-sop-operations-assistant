@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Internal operations assistant for SOPs, notes, action items, and business rewrites." />
+  <title>AI SOP & Operations Assistant | Ops Platform</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="app-header">
+    <div class="app-header__inner">
+      <div class="app-header__brand">
+        <span class="app-logo" aria-hidden="true">OP</span>
+        <div>
+          <p class="app-header__org">Operations Platform</p>
+          <h1 class="app-header__title">AI SOP &amp; Operations Assistant</h1>
+        </div>
+      </div>
+      <div class="app-header__meta">
+        <span class="env-badge">Internal</span>
+        <span class="app-header__version">v0.1 · Staging</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="review-banner" role="alert">
+    <span class="review-banner__icon" aria-hidden="true">!</span>
+    <p class="review-banner__text">
+      <strong>Human review required.</strong>
+      All AI-generated output must be reviewed, edited, and approved by a qualified operator
+      before use in runbooks, customer communications, or compliance documentation.
+    </p>
+  </div>
+
+  <main id="main" class="app-main">
+    <div class="workspace">
+      <div class="tab-bar" role="tablist" aria-label="Operations tools">
+        <button
+          type="button"
+          role="tab"
+          id="tab-draft-sop"
+          class="tab tab--active"
+          aria-selected="true"
+          aria-controls="panel-draft-sop"
+          data-tab="draft-sop"
+        >
+          Draft SOP
+        </button>
+        <button
+          type="button"
+          role="tab"
+          id="tab-summarize-notes"
+          class="tab"
+          aria-selected="false"
+          aria-controls="panel-summarize-notes"
+          data-tab="summarize-notes"
+          tabindex="-1"
+        >
+          Summarize Ops Notes
+        </button>
+        <button
+          type="button"
+          role="tab"
+          id="tab-extract-actions"
+          class="tab"
+          aria-selected="false"
+          aria-controls="panel-extract-actions"
+          data-tab="extract-actions"
+          tabindex="-1"
+        >
+          Extract Action Items
+        </button>
+        <button
+          type="button"
+          role="tab"
+          id="tab-business-rewrite"
+          class="tab"
+          aria-selected="false"
+          aria-controls="panel-business-rewrite"
+          data-tab="business-rewrite"
+          tabindex="-1"
+        >
+          Business Rewrite
+        </button>
+      </div>
+
+      <!-- Tab panel: Draft SOP -->
+      <section
+        id="panel-draft-sop"
+        class="tab-panel tab-panel--active"
+        role="tabpanel"
+        aria-labelledby="tab-draft-sop"
+        data-tool="draft-sop"
+      >
+        <header class="panel-intro">
+          <h2>Draft SOP</h2>
+          <p>Convert a rough process description into a structured standard operating procedure outline.</p>
+        </header>
+        <div class="workspace-grid">
+          <div class="input-card">
+            <form class="tool-form" data-tool="draft-sop">
+              <label for="draft-sop-input">Process description</label>
+              <textarea
+                id="draft-sop-input"
+                name="input"
+                class="input-textarea"
+                rows="16"
+                placeholder="Describe the process: triggers, steps, systems, roles, escalation paths, and exceptions..."
+              ></textarea>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Generate SOP draft</button>
+                <button type="button" class="btn btn-sample" data-action="load-sample">Load sample</button>
+                <button type="button" class="btn btn-secondary" data-action="clear">Clear input</button>
+              </div>
+            </form>
+          </div>
+          <article class="output-card" aria-live="polite">
+            <header class="output-card__header">
+              <h3>Generated output</h3>
+              <span class="output-card__status" data-status="draft">Draft · Unreviewed</span>
+            </header>
+            <div class="output-card__body">
+              <pre id="draft-sop-output" class="output-content placeholder">1. Purpose
+2. Scope
+3. Responsibilities
+4. Procedure steps
+5. Exceptions &amp; escalation</pre>
+            </div>
+            <footer class="output-card__footer">Not approved for distribution until human review is complete.</footer>
+          </article>
+        </div>
+      </section>
+
+      <!-- Tab panel: Summarize Ops Notes -->
+      <section
+        id="panel-summarize-notes"
+        class="tab-panel"
+        role="tabpanel"
+        aria-labelledby="tab-summarize-notes"
+        data-tool="summarize-notes"
+        hidden
+      >
+        <header class="panel-intro">
+          <h2>Summarize Ops Notes</h2>
+          <p>Condense shift logs, stand-ups, or incident timelines into a handoff-ready summary.</p>
+        </header>
+        <div class="workspace-grid">
+          <div class="input-card">
+            <form class="tool-form" data-tool="summarize-notes">
+              <label for="summarize-notes-input">Ops notes</label>
+              <textarea
+                id="summarize-notes-input"
+                name="input"
+                class="input-textarea"
+                rows="16"
+                placeholder="Paste raw shift notes, meeting minutes, or incident timeline entries..."
+              ></textarea>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Summarize notes</button>
+                <button type="button" class="btn btn-sample" data-action="load-sample">Load sample</button>
+                <button type="button" class="btn btn-secondary" data-action="clear">Clear input</button>
+              </div>
+            </form>
+          </div>
+          <article class="output-card" aria-live="polite">
+            <header class="output-card__header">
+              <h3>Generated output</h3>
+              <span class="output-card__status" data-status="draft">Draft · Unreviewed</span>
+            </header>
+            <div class="output-card__body">
+              <pre id="summarize-notes-output" class="output-content placeholder">• Key events: (pending generation)
+• Blockers: (pending generation)
+• Decisions: (pending generation)
+• Next shift handoff: (pending generation)</pre>
+            </div>
+            <footer class="output-card__footer">Not approved for distribution until human review is complete.</footer>
+          </article>
+        </div>
+      </section>
+
+      <!-- Tab panel: Extract Action Items -->
+      <section
+        id="panel-extract-actions"
+        class="tab-panel"
+        role="tabpanel"
+        aria-labelledby="tab-extract-actions"
+        data-tool="extract-actions"
+        hidden
+      >
+        <header class="panel-intro">
+          <h2>Extract Action Items</h2>
+          <p>Identify tasks, owners, and due dates from unstructured meeting or operations text.</p>
+        </header>
+        <div class="workspace-grid">
+          <div class="input-card">
+            <form class="tool-form" data-tool="extract-actions">
+              <label for="extract-actions-input">Source text</label>
+              <textarea
+                id="extract-actions-input"
+                name="input"
+                class="input-textarea"
+                rows="16"
+                placeholder="Paste transcripts, email threads, or stand-up notes containing commitments and follow-ups..."
+              ></textarea>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Extract action items</button>
+                <button type="button" class="btn btn-sample" data-action="load-sample">Load sample</button>
+                <button type="button" class="btn btn-secondary" data-action="clear">Clear input</button>
+              </div>
+            </form>
+          </div>
+          <article class="output-card" aria-live="polite">
+            <header class="output-card__header">
+              <h3>Generated output</h3>
+              <span class="output-card__status" data-status="draft">Draft · Unreviewed</span>
+            </header>
+            <div class="output-card__body">
+              <pre id="extract-actions-output" class="output-content placeholder">[ ] Task — Owner — Due
+[ ] Task — Owner — Due</pre>
+            </div>
+            <footer class="output-card__footer">Not approved for distribution until human review is complete.</footer>
+          </article>
+        </div>
+      </section>
+
+      <!-- Tab panel: Business Rewrite -->
+      <section
+        id="panel-business-rewrite"
+        class="tab-panel"
+        role="tabpanel"
+        aria-labelledby="tab-business-rewrite"
+        data-tool="business-rewrite"
+        hidden
+      >
+        <header class="panel-intro">
+          <h2>Business Rewrite</h2>
+          <p>Rephrase technical or operational content for executives and cross-functional stakeholders.</p>
+        </header>
+        <div class="workspace-grid">
+          <div class="input-card">
+            <form class="tool-form" data-tool="business-rewrite">
+              <label for="business-rewrite-input">Original text</label>
+              <textarea
+                id="business-rewrite-input"
+                name="input"
+                class="input-textarea"
+                rows="16"
+                placeholder="Paste incident details, engineering updates, or internal ops briefs to rewrite for a business audience..."
+              ></textarea>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Rewrite for business</button>
+                <button type="button" class="btn btn-sample" data-action="load-sample">Load sample</button>
+                <button type="button" class="btn btn-secondary" data-action="clear">Clear input</button>
+              </div>
+            </form>
+          </div>
+          <article class="output-card" aria-live="polite">
+            <header class="output-card__header">
+              <h3>Generated output</h3>
+              <span class="output-card__status" data-status="draft">Draft · Unreviewed</span>
+            </header>
+            <div class="output-card__body">
+              <pre id="business-rewrite-output" class="output-content placeholder">Executive summary and impact will appear here after generation.</pre>
+            </div>
+            <footer class="output-card__footer">Not approved for distribution until human review is complete.</footer>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <p>AI SOP &amp; Operations Assistant · Internal use only · Extend <code>app.js</code> to connect your approved API endpoint.</p>
+  </footer>
+
+  <script src="samples.js"></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
