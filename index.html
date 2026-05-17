@@ -33,6 +33,16 @@
       All AI-generated output must be reviewed, edited, and approved by a qualified operator
       before use in runbooks, customer communications, or compliance documentation.
     </p>
+    <label class="review-banner__reviewer" for="reviewer-name">
+      <span>Reviewer name</span>
+      <input
+        type="text"
+        id="reviewer-name"
+        class="reviewer-name-input"
+        value="Demo reviewer"
+        autocomplete="name"
+      />
+    </label>
   </div>
 
   <main id="main" class="app-main">
@@ -117,7 +127,7 @@
               </div>
             </form>
           </div>
-          <article class="output-card" aria-live="polite">
+          <article class="output-card" data-tool="draft-sop" aria-live="polite">
             <header class="output-card__header">
               <h3>Generated output</h3>
               <span class="output-card__status" data-status="draft">Draft · Unreviewed</span>
@@ -129,7 +139,32 @@
 4. Procedure steps
 5. Exceptions &amp; escalation</pre>
             </div>
-            <footer class="output-card__footer">Not approved for distribution until human review is complete.</footer>
+            <div class="output-card__review">
+              <div class="review-actions">
+                <button type="button" class="btn btn-approve" data-action="approve" disabled>
+                  Approve
+                </button>
+                <button type="button" class="btn btn-reject" data-action="reject" disabled>
+                  Request changes
+                </button>
+                <button type="button" class="btn btn-secondary" data-action="edit-output" hidden>
+                  Edit output
+                </button>
+                <button type="button" class="btn btn-primary" data-action="save-edit" hidden>
+                  Save edits
+                </button>
+                <button type="button" class="btn btn-secondary" data-action="cancel-edit" hidden>
+                  Cancel
+                </button>
+                <button type="button" class="btn btn-secondary btn-review-reset" data-action="reset-review" hidden>
+                  Reset review
+                </button>
+              </div>
+              <p class="review-meta" data-review-meta hidden></p>
+            </div>
+            <footer class="output-card__footer" data-review-footer>
+              Not approved for distribution until human review is complete.
+            </footer>
           </article>
         </div>
       </section>
@@ -165,7 +200,7 @@
               </div>
             </form>
           </div>
-          <article class="output-card" aria-live="polite">
+          <article class="output-card" data-tool="summarize-notes" aria-live="polite">
             <header class="output-card__header">
               <h3>Generated output</h3>
               <span class="output-card__status" data-status="draft">Draft · Unreviewed</span>
@@ -176,7 +211,32 @@
 • Decisions: (pending generation)
 • Next shift handoff: (pending generation)</pre>
             </div>
-            <footer class="output-card__footer">Not approved for distribution until human review is complete.</footer>
+            <div class="output-card__review">
+              <div class="review-actions">
+                <button type="button" class="btn btn-approve" data-action="approve" disabled>
+                  Approve
+                </button>
+                <button type="button" class="btn btn-reject" data-action="reject" disabled>
+                  Request changes
+                </button>
+                <button type="button" class="btn btn-secondary" data-action="edit-output" hidden>
+                  Edit output
+                </button>
+                <button type="button" class="btn btn-primary" data-action="save-edit" hidden>
+                  Save edits
+                </button>
+                <button type="button" class="btn btn-secondary" data-action="cancel-edit" hidden>
+                  Cancel
+                </button>
+                <button type="button" class="btn btn-secondary btn-review-reset" data-action="reset-review" hidden>
+                  Reset review
+                </button>
+              </div>
+              <p class="review-meta" data-review-meta hidden></p>
+            </div>
+            <footer class="output-card__footer" data-review-footer>
+              Not approved for distribution until human review is complete.
+            </footer>
           </article>
         </div>
       </section>
@@ -212,7 +272,7 @@
               </div>
             </form>
           </div>
-          <article class="output-card" aria-live="polite">
+          <article class="output-card" data-tool="extract-actions" aria-live="polite">
             <header class="output-card__header">
               <h3>Generated output</h3>
               <span class="output-card__status" data-status="draft">Draft · Unreviewed</span>
@@ -221,7 +281,32 @@
               <pre id="extract-actions-output" class="output-content placeholder">[ ] Task — Owner — Due
 [ ] Task — Owner — Due</pre>
             </div>
-            <footer class="output-card__footer">Not approved for distribution until human review is complete.</footer>
+            <div class="output-card__review">
+              <div class="review-actions">
+                <button type="button" class="btn btn-approve" data-action="approve" disabled>
+                  Approve
+                </button>
+                <button type="button" class="btn btn-reject" data-action="reject" disabled>
+                  Request changes
+                </button>
+                <button type="button" class="btn btn-secondary" data-action="edit-output" hidden>
+                  Edit output
+                </button>
+                <button type="button" class="btn btn-primary" data-action="save-edit" hidden>
+                  Save edits
+                </button>
+                <button type="button" class="btn btn-secondary" data-action="cancel-edit" hidden>
+                  Cancel
+                </button>
+                <button type="button" class="btn btn-secondary btn-review-reset" data-action="reset-review" hidden>
+                  Reset review
+                </button>
+              </div>
+              <p class="review-meta" data-review-meta hidden></p>
+            </div>
+            <footer class="output-card__footer" data-review-footer>
+              Not approved for distribution until human review is complete.
+            </footer>
           </article>
         </div>
       </section>
@@ -257,7 +342,7 @@
               </div>
             </form>
           </div>
-          <article class="output-card" aria-live="polite">
+          <article class="output-card" data-tool="business-rewrite" aria-live="polite">
             <header class="output-card__header">
               <h3>Generated output</h3>
               <span class="output-card__status" data-status="draft">Draft · Unreviewed</span>
@@ -265,7 +350,32 @@
             <div class="output-card__body">
               <pre id="business-rewrite-output" class="output-content placeholder">Executive summary and impact will appear here after generation.</pre>
             </div>
-            <footer class="output-card__footer">Not approved for distribution until human review is complete.</footer>
+            <div class="output-card__review">
+              <div class="review-actions">
+                <button type="button" class="btn btn-approve" data-action="approve" disabled>
+                  Approve
+                </button>
+                <button type="button" class="btn btn-reject" data-action="reject" disabled>
+                  Request changes
+                </button>
+                <button type="button" class="btn btn-secondary" data-action="edit-output" hidden>
+                  Edit output
+                </button>
+                <button type="button" class="btn btn-primary" data-action="save-edit" hidden>
+                  Save edits
+                </button>
+                <button type="button" class="btn btn-secondary" data-action="cancel-edit" hidden>
+                  Cancel
+                </button>
+                <button type="button" class="btn btn-secondary btn-review-reset" data-action="reset-review" hidden>
+                  Reset review
+                </button>
+              </div>
+              <p class="review-meta" data-review-meta hidden></p>
+            </div>
+            <footer class="output-card__footer" data-review-footer>
+              Not approved for distribution until human review is complete.
+            </footer>
           </article>
         </div>
       </section>
