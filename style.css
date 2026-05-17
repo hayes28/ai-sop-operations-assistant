@@ -116,8 +116,40 @@ body {
 
 .app-header__meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
   gap: 0.75rem;
+}
+
+.access-code-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.access-code-input {
+  min-width: 11rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-header-text);
+}
+
+.access-code-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.access-code-input:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .env-badge {

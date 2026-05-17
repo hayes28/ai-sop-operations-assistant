@@ -12,6 +12,8 @@ const TOOLS = [
 ];
 
 const REVIEW_STORAGE_KEY = "ops-assistant-review-v1";
+const ACCESS_CODE_STORAGE_KEY = "ops-assistant-access-code";
+const MAX_INPUT_LENGTH = 8000;
 
 function normalizeInput(text) {
   return text.replace(/\r\n/g, "\n").trim();
@@ -26,39 +28,83 @@ function getDemoOutput(toolId, input) {
   return null;
 }
 
-async function runTool(toolId, input) {
-  // TODO: fetch("/api/generate", { method: "POST", body: JSON.stringify({ toolId, input }) })
-  await delay(400);
+function getAccessCodeInput() {
+  return document.getElementById("access-code");
+}
 
+function getAccessCode() {
+  const input = getAccessCodeInput();
+  return input?.value.trim() ?? "";
+}
+
+function persistAccessCode() {
+  const code = getAccessCode();
+  if (code) {
+    sessionStorage.setItem(ACCESS_CODE_STORAGE_KEY, code);
+  } else {
+    sessionStorage.removeItem(ACCESS_CODE_STORAGE_KEY);
+  }
+}
+
+function restoreAccessCode() {
+  const input = getAccessCodeInput();
+  if (!input) return;
+  const saved = sessionStorage.getItem(ACCESS_CODE_STORAGE_KEY);
+  if (saved) input.value = saved;
+}
+
+function initAccessCode() {
+  restoreAccessCode();
+  getAccessCodeInput()?.addEventListener("input", persistAccessCode);
+}
+
+/**
+ * Portfolio demos: exact sample input returns bundled output without calling the API.
+ * Custom input calls POST /api/generate (Gemini on the server).
+ */
+async function runTool(toolId, input) {
   const trimmed = input.trim();
   if (!trimmed) {
     throw new Error("Please enter some text before running this tool.");
   }
 
+  if (trimmed.length > MAX_INPUT_LENGTH) {
+    throw new Error(`Input is too long. Maximum is ${MAX_INPUT_LENGTH} characters.`);
+  }
+
   const demo = getDemoOutput(toolId, trimmed);
   if (demo) return demo;
 
-  return buildGenericPlaceholder(toolId, trimmed);
-}
-
-function buildGenericPlaceholder(toolId, input) {
-  const hint = "Load sample for a full demo, or connect your API in runTool().";
-  switch (toolId) {
-    case "draft-sop":
-      return `SOP outline (generic)\n\n1. Purpose — based on ${input.length} characters of input\n2. Scope\n3. Responsibilities\n4. Procedure\n5. Exceptions\n\n${hint}`;
-    case "summarize-notes":
-      return `OPS SUMMARY (generic)\n\n• Input received (${input.length} chars)\n• Key events: [generate]\n• Blockers: [generate]\n• Handoff: [generate]\n\n${hint}`;
-    case "extract-actions":
-      return `ACTION ITEMS (generic)\n\n[ ] Review submitted text — Owner — Due\n\n${hint}`;
-    case "business-rewrite":
-      return `BUSINESS SUMMARY (generic)\n\nSituation: [generate from input]\nImpact: [generate]\nNext steps: [generate]\n\n${hint}`;
-    default:
-      throw new Error(`Unknown tool: ${toolId}`);
+  const accessCode = getAccessCode();
+  if (!accessCode) {
+    throw new Error("Enter the access code in the header before generating with AI.");
   }
-}
 
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  const response = await fetch("/api/generate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Access-Code": accessCode,
+    },
+    body: JSON.stringify({ toolId, input: trimmed }),
+  });
+
+  let data = {};
+  try {
+    data = await response.json();
+  } catch {
+    /* non-JSON error body */
+  }
+
+  if (!response.ok) {
+    throw new Error(data.error || `Generation failed (${response.status}).`);
+  }
+
+  if (!data.text || typeof data.text !== "string") {
+    throw new Error("Server returned an invalid response.");
+  }
+
+  return data.text;
 }
 
 function getOutputEl(toolId) {
@@ -585,6 +631,7 @@ function initTabs() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  initAccessCode();
   initTabs();
   initReview();
   initForms();
